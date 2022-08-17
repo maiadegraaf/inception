@@ -1,0 +1,32 @@
+version: "1.29.2"
+
+services:
+  mariadb:
+    image: mariadb
+    restart: always
+    volumes:
+      - db:var/lib/mysql
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      -
+  wordpress:
+    image: wordpress
+    restart: always
+
+volumes:
+  db:
+    driver: local
+    name: DB
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mgraaf/data/mariadb
+  wp:
+    driver: local
+    name: wp
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mgraaf/data/wordpress
