@@ -1,0 +1,31 @@
+#!/bin/sh
+set -x
+
+mysqld
+sleep infinity
+
+# mkdir -p /run/mysqld
+# chown -R mysql:mysql /run/mysqld
+# chown -R mysql:mysql /var/lib/mysql
+
+# mysql_install_db
+
+# service mysql stop
+
+# cat << END > /tmp/wpdbscript.sql
+# CREATE DATABASE IF NOT EXISTS WP;
+# CREATE USER IF NOT EXISTS '$WP_USER_LOGIN'@'localhost'
+# SET PASSWORD FOR '$WP_USER_LOGIN'@'localhost' = PASSWORD('$WP_USER_PASSWORD');
+# CREATE USER IF NOT EXISTS '$WP_BOSS_LOGIN'@'localhost' IDENTIFIED BY '$WP_BOSS_PASSWORD';
+# SET PASSWORD FOR '$WP_BOSS_LOGIN'@'localhost' = PASSWORD('$WP_BOSS_PASSWORD');
+# GRANT ALL PRIVILEGES ON *.* TO '$WP_BOSS_LOGIN'@'localhost' WITH GRANT OPTION;
+# DELETE FROM mysql.user WHERE User='root';
+# FLUSH PRIVILEGES;
+# END
+
+# service mysql start && mysql < /tmp/wpdbscript.sql
+# #This will give an error, but it still fixes a problem :S Without it, I can't start the mysqld afterwards
+# mysqladmin -u$WP_BOSS_LOGIN -p$WP_BOSS_PASSWORD shutdown
+# rm -f /tmp/wpdbscript.sql
+
+

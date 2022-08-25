@@ -1,0 +1,2 @@
+#!/usr/bin/fish
+docker exec -it (./get_container_id ) bash

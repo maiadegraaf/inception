@@ -1,0 +1,2 @@
+#!/usr/bin/fish
+docker ps -a | grep Up | grep  | awk '{print }'
