@@ -19,7 +19,7 @@ This project focuses on system administration using Docker.  The purpose is to c
 - All images, networks, and volumes should be set up by a single docker-compose.yml file.
 - The project has to be done on a Virtual Machine.
 
-![A diagram that demonstrates the expected structure of the finished project.  Based on the diagram given in the subject.](/Users/maiadegraaf/CLionProjects/inception/imgs/inception_diagram.001.png "Diagram of Structure")
+![A diagram that demonstrates the expected structure of the finished project.  Based on the diagram given in the subject.](./imgs/inception_diagram.png "Diagram of Structure")
 
 ## Implementation
 
