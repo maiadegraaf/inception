@@ -344,16 +344,30 @@ EXPOSE 443
 ENTRYPOINT echo "Running nginx" && nginx -g 'daemon off;'
 ```
 
-### Final Thoughts
+### Virtual Machine and Shared Folder
+While I was working on the containers I also set up a virtual machine and a shared folder.  As some of the things setup in the dockerfiles require you to be a root user of the host computer, which students don't have access to, I needed to set up the VM in order to properly run the project.  In order to do this without pulling out all of my hairs and having to code on the slowest interface known to man I set up a shared folder.  The shared folder is a folder on the host that is shared with the virtual machine.  It meant that I could be working on the project on my host computer and the changes would be reflected in the virtual machine. 
 
-## Examples
+I set up the virtual machine using VirtualBox.  To setup the shared folder I followed Nick Kuipers inception [guide](https://github.com/NEKuipers/Inception/blob/master/Inception_guide.txt).
 
-## Installation
-### Clone the repository:
-``` 
-git clone https://github.com/maiadegraaf/inception.git
-cd inception
-make
+1) In VirtualBox, go to Settings->Shared folder and click add.
+2) I picked the root folder of the project as the folder to share, which for me was creatively named `inception`, set the auto mount option to true, and click OK.
+3) Then in the VM I created a folder called `shared_folder`. 
+4) Finally, I ran the following command in the terminal in the VM: `sudo mount -t vboxsf inception shared_folder`
+
+Now everything in the `inception` folder on the host computer is shared with the `shared_folder` folder in the VM.
+
+Another thing that made my life easier was connecting to the VM using SSH so that I could run the containers without having to use the VirtualBox interface and I only had to use the VM to access the website.
+
+The last thing I needed to do is to change a line to the `/etc/hosts` file on the VM to redirect the `localhost` address to the WordPress website that this project sets up.  Which is required by the subject. 
+```
+127.0.0.1   localhost
+```
+becomes
+```
+127.0.0.1   localhost   mgraaf.42.fr
 ```
 
-### Run
+
+### Final Thoughts
+While creating this ReadMe it felt like this project was actually quite straight forward but in reality I really struggled.  I found it quite difficult to trace back the errors, and often it took me hours to figure out what was going wrong, which was quite frustrating.  Especially as many of the errors were caused by spelling mistakes that prevented the different containers from connecting, which is not something that tends to show up in error logs.  I also found it quite difficult to find the right documentation for the things I was trying to do.  Overall, the project was quite finicky and while working on it, if I got something to work, even if it was not a nice or optimal solution I would just leave it as it was for fear of breaking something else.  Which is not something I usually do. I'm not necessarily proud of this project, but I am happy I got it done and I did learn a lot about Docker, MariaDB, and NGINX.
+
