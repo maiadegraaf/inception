@@ -5,7 +5,7 @@
 <!-- TOC -->
 * [inception](#inception)
   * [The Challenge](#the-challenge)
-    * [Requirements:](#reqiurements-)
+    * [Requirements:](#requirements-)
   * [Concepts](#concepts)
     * [Docker](#docker)
       * [How Docker Works](#how-docker-works)
@@ -27,11 +27,8 @@
       * [MariaDB](#mariadb-1)
       * [WordPress](#wordpress-1)
       * [NGINX](#nginx-1)
+    * [Virtual Machine and Shared Folder](#virtual-machine-and-shared-folder)
     * [Final Thoughts](#final-thoughts)
-  * [Examples](#examples)
-  * [Installation](#installation)
-    * [Clone the repository:](#clone-the-repository-)
-    * [Run](#run)
 <!-- TOC -->
 
 ## The Challenge
