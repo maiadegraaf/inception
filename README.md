@@ -345,9 +345,9 @@ ENTRYPOINT echo "Running nginx" && nginx -g 'daemon off;'
 ```
 
 ### Virtual Machine and Shared Folder
-While I was working on the containers I also set up a virtual machine and a shared folder.  As some of the things setup in the dockerfiles require you to be a root user of the host computer, which students don't have access to, I needed to set up the VM in order to properly run the project.  In order to do this without pulling out all of my hairs and having to code on the slowest interface known to man I set up a shared folder.  The shared folder is a folder on the host that is shared with the virtual machine.  It meant that I could be working on the project on my host computer and the changes would be reflected in the virtual machine. 
+While I was working on the containers I also set up a virtual machine and a shared folder.  As some things setup in the dockerfiles require you to be a root user of the host computer, which students don't have access to, I needed to set up the VM in order to properly run the project.  In order to do this without pulling out all of my hairs and having to code on the slowest interface known to man I set up a shared folder.  The shared folder is a folder on the host that is shared with the virtual machine.  It meant that I could be working on the project on my host computer and the changes would be reflected in the virtual machine. 
 
-I set up the virtual machine using VirtualBox.  To setup the shared folder I followed Nick Kuipers inception [guide](https://github.com/NEKuipers/Inception/blob/master/Inception_guide.txt).
+I set up the virtual machine using VirtualBox.  To set up the shared folder I followed Nick Kuipers inception [guide](https://github.com/NEKuipers/Inception/blob/master/Inception_guide.txt).
 
 1) In VirtualBox, go to Settings->Shared folder and click add.
 2) I picked the root folder of the project as the folder to share, which for me was creatively named `inception`, set the auto mount option to true, and click OK.
