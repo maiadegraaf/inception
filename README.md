@@ -2,33 +2,31 @@
 
 *A System Administration related exercise.*
 
-## Table of Contents
-- [The Challenge](#the-challenge)
-- [Implementation](#implementation)
-    - [Final Thoughts](#final-thoughts)
-- [Examples](#examples)
-- [Installation](#installation)
-
 <!-- TOC -->
 * [inception](#inception)
-  * [Table of Contents](#table-of-contents)
   * [The Challenge](#the-challenge)
-    * [Reqiurements:](#reqiurements-)
+    * [Requirements:](#reqiurements-)
   * [Concepts](#concepts)
     * [Docker](#docker)
       * [How Docker Works](#how-docker-works)
       * [How Docker Compose Works](#how-docker-compose-works)
       * [Setting up images with or without Docker Compose](#setting-up-images-with-or-without-docker-compose)
       * [Docker vs Virtual Machines](#docker-vs-virtual-machines)
+      * [Network](#network)
+      * [Volumes](#volumes)
     * [NGINX](#nginx)
     * [MariaDB](#mariadb)
     * [WordPress](#wordpress)
   * [Implementation](#implementation)
-    * [Network](#network)
-    * [Volumes](#volumes)
-    * [MariaDB](#mariadb-1)
-    * [WordPress](#wordpress-1)
-    * [NGINX](#nginx-1)
+    * [Docker Compose](#docker-compose)
+      * [Network](#network-1)
+      * [Volumes](#volumes-1)
+      * [Containers](#containers)
+      * [.env file](#env-file)
+    * [Dockerfiles](#dockerfiles)
+      * [MariaDB](#mariadb-1)
+      * [WordPress](#wordpress-1)
+      * [NGINX](#nginx-1)
     * [Final Thoughts](#final-thoughts)
   * [Examples](#examples)
   * [Installation](#installation)
@@ -39,7 +37,7 @@
 ## The Challenge
 This project focuses on system administration using Docker.  The purpose is to create a WordPress website that is hosted by NGINX and has a MariaDB database. 
 
-### Reqiurements:
+### Requirements:
 - WordPress, NGINX and MariaDB all have their own containers and communicate with each other using a single Docker network. 
 - Two volumes have to be created, one for the MariaDB database and one for the WordPress website files. 
 - Write our own Dockerfiles, one for each service.
@@ -53,6 +51,17 @@ The subject provided a similar diagram to the one below to demonstrate the requi
 
 ## Concepts
 The following are brief explanations and definitions of the concepts introduced in this project.
+* [Docker](#docker)
+  * [How Docker Works](#how-docker-works)
+  * [How Docker Compose Works](#how-docker-compose-works)
+  * [Setting up images with or without Docker Compose](#setting-up-images-with-or-without-docker-compose)
+  * [Docker vs Virtual Machines](#docker-vs-virtual-machines)
+  * [Network](#network)
+  * [Volumes](#volumes)
+* [NGINX](#nginx)
+* [MariaDB](#mariadb)
+* [WordPress](#wordpress)
+
 ### Docker
 [docs.docker.com](https://docs.docker.com/get-started/overview/) describes Docker as: _"an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly."_
 
