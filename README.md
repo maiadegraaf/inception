@@ -48,7 +48,7 @@ This project focuses on system administration using Docker.  The purpose is to c
 
 The subject provided a similar diagram to the one below to demonstrate the required structure of the project:
 <div style="text-align: center;">
-<img src="./imgs/inception_diagram.png" width="900px"/>
+<img src="./imgs/inception_diagram.png" width="900px" alt="diagram of required structure"/>
 </div>
 
 ## Concepts
@@ -181,14 +181,159 @@ services:
       - wp:/var/www/html
 ```
 
+Where `db` is the name of the volume, and `/var/lib/mysql` is the path to the directory on the container that will be used to store the data.  The same is done for the WordPress container, but the path is different as the WordPress container uses a different directory to store the data.
+
 #### Containers
+The final step in the `docker-compose.yml` file was to configure the containers.  I started by configuring the MariaDB container as the other containers depend on it:
+```yml
+services:
+  mariadb:
+    image: mariadb
+    container_name: mariadb
+    build: requirements/mariadb/
+    restart: always
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - lenetwork
+    env_file:
+        - .env
+```
+
+Where:
+- `image: mariadb` is used to specify the image that will be used to create the container.
+- `container_name: mariadb` is used to specify the name of the container, as per the subject.
+- `build: requirements/mariadb/` is used to specify the path to the Dockerfile that will be used to build the image.
+- `restart: always` is used to specify that the container should restart if it crashes.
+- `volumes: - db:/var/lib/mysql` is used to specify the volume that will be used to store the data.
+- `networks: - lenetwork` is used to specify the network that the container will be connected to.
+- `env_file: - .env` is used to specify the path to the file that contains the environment variables that will be used to configure the container.
+
+NGINX and WordPress were configured in a similar manner except for the `env_file` option.  The `env_file` option was not used as the environment variables are not needed for these containers.  Further I specified the port NGINX would use which is `443:443` as per the subject, and made it depend on the WordPress container which needs to be running before NGINX can start.  The final `docker-compose.yml` file can be found [here](./src/docker-compose.yml).
+
+#### .env file
+While I was setting up the `docker-compose.yml` file I also created a `.env` file which contains the environment variables that will be used to configure the MariaDB container.  The `.env` file is structured as follows:
+```env
+WP_USER_PASSWORD=bigsecret
+WP_BOSS_PASSWORD=smallsecret
+WP_URL=mgraaf.42.fr
+
+WP_BOSS_LOGIN=BigGuy
+WP_USER_LOGIN=SmallGuy
+TZ=Europe/Madrid
+ROOT_PASSWORD=rootpw
+```
+The subject also requires that the url is our intra login.  The `.env` file can be found [here](./src/.env).
+
+### Dockerfiles
+In order to properly test the containers as I was building them I commented all the containers except for the one I was working on.  This way I could test the container in isolation.  Once the container was working I uncommented the other containers and tested the whole project.  This was a very useful technique as it allowed me to quickly identify errors and fix them.
+
+The subject asked us to build the containers from the penultimate stable
+version of Alpine or Debian.  I chose to use Debian as I am more familiar with it of which the latest stable version is Buster. 
+
+#### MariaDB
+The first container I configured was the MariaDB container.  The `Dockerfile` is structured as follows:
+```Dockerfile
+FROM debian:buster
+
+RUN apt-get update && apt-get install -y 
+RUN apt-get install -y mariadb-server mariadb-client nano #I installed nano for testing purposes
+```
+Where the first line specifies the image that will be used to create the container.  The second line is used to update the package list and install the packages needed to run the container.  The packages I installed were `mariadb-server` and `mariadb-client`.  I also installed `nano` for testing purposes.  The `Dockerfile` can be found [here](./src/requirements/mariadb/Dockerfile).
+
+```Dockerfile
+COPY tools/db_setup.sh /tmp/
+``` 
+Where `COPY` is used to copy the setup file from the host to tmp directory on the container.  The `db_setup.sh` file can be found [here](./src/requirements/mariadb/tools/db_setup.sh) and is a MariaDB setup script that installs the database, starts it, and  creates two users, one that essentially has root privileges and one that has no privileges.
+
+```Dockerfile
+EXPOSE 3306
+```
+Where `EXPOSE` is used to expose the port that the container will use.  The port is `3306` as per the subject.
+
+```Dockerfile
+RUN chmod +x /tmp/db_setup.sh
+RUN sed 's/bind-address            = 127.0.0.1/bind-address            = 0.0.0.0/' -i  /etc/mysql/mariadb.conf.d/50-server.cnf
+RUN sed 's/skip-networking/#skip-networking/g' -i  /etc/mysql/mariadb.conf.d/50-server.cnf 
+```
+Here, the first run makes the setup script executable, and the second and third runs change the configuration file that automatically is created when MariaDB is installed.  The second run changes the `bind-address` and the third run removes the `skip-networking` option, so that the database can be accessed from outside the container.
 
 
-### MariaDB
+Finally, an entrypoint is specified:
+```Dockerfile
+ENTRYPOINT /tmp/db_setup.sh
+```
+Where the entrypoint is the setup script.
 
-### WordPress
+#### WordPress
+Once I was satisfied with the MariaDB container I moved on to the WordPress container.  The `Dockerfile` is structured as follows:
+```Dockerfile
+FROM debian:buster
 
-### NGINX
+RUN apt-get update
+RUN apt-get install -y php-fpm php-mysql wget mariadb-client
+```
+ The first two `RUN`'s are used to update the package list and install the packages needed to run the container.  The packages I installed were `php-fpm`, `php-mysql`, `wget`, and `mariadb-client`.  
+```Dockerfile
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+RUN chmod u+x wp-cli.phar
+RUN mv wp-cli.phar /usr/local/bin/wp
+```
+Here, the first run downloads the `wp-cli.phar` file, the second run makes it executable, and the third run moves it to the `/usr/local/bin` directory so that it can be used from anywhere.
+
+```Dockerfile
+RUN sed 's|listen = /run/php/php7.3-fpm.sock|listen = 0.0.0.0:9000|g' -i /etc/php/7.3/fpm/pool.d/www.conf
+RUN mkdir -p /run/php
+```
+The first run changes the `listen` option in the `www.conf` file so that the container can be accessed from outside the container.  The second run creates the `/run/php` directory which is needed for the container to run.
+
+```Dockerfile
+COPY tools/wp_setup.sh .
+COPY tools/wait.sh .
+RUN chmod +x wp_setup.sh
+RUN chmod +x wait.sh
+```
+Here, the first two `COPY`'s copy the setup script and the wait script from the host to the container.  The third and fourth `RUN`'s make the scripts executable.
+
+The wp_setup script installs WordPress, starts the php-fpm server, and creates a WordPress user.  The wait script waits for the database to be ready before starting the php-fpm server.  The `wp_setup.sh` file can be found [here](./src/requirements/wordpress/tools/wp_setup.sh) and the `wait.sh` file can be found [here](./src/requirements/wordpress/tools/wait.sh).
+
+Next the port `9000` is exposed and entrypoint is specified:
+```Dockerfile 
+EXPOSE 9000
+
+ENTRYPOINT ./wait.sh && ./wp_setup.sh
+```
+Where the entrypoint is the wait script followed by the setup script.
+
+#### NGINX
+Finally, I set up the NGINX container.  The `Dockerfile` is structured as follows:
+```Dockerfile
+FROM debian:buster
+
+RUN apt-get update
+RUN apt-get install -y nginx openssl curl
+RUN apt-get -y install libfcgi0ldbl
+```
+The first two lines (after the `FROM`) are used to update the package list and install the packages needed to run the container.  The packages I installed were `nginx`, `openssl`, `curl`, and `libfcgi0ldbl`.  The `libfcgi0ldbl` package is needed to run the `wp-cli.phar` file.
+
+```Dockerfile
+COPY conf/nginx.conf /etc/nginx/sites-available/default.conf
+```
+Where `COPY` is used to copy the configuration file from the host to the container.  The configuration file can be found [here](./src/requirements/nginx/conf/nginx.conf).
+
+The configuration file sets up the server and configures the various components.  Importantly it sets up the ssl certificate and key.  The `ssl_certificate` and `ssl_certificate_key` options are set to the paths of the certificate and key files, which are generated in the Dockerfile.  It also sets the ssl protocols to `TLSv1.2` and `TLSv1.3` as required in the subject.  The ssl protocol sets up the encryption that is used to secure the connection between the client and the server.
+
+```Dockerfile
+RUN openssl req -nodes -newkey rsa:4096 -keyout /etc/nginx/key.key -out /etc/nginx/crt.crt -subj "/C=NL/ST=FunkyState/L=BlepCity/O=Bloebla Inc./CN=Ms. Fliebel" -x509
+```
+The `openssl` command is used to generate the certificate and key files that are used in the configuration file.  The `-nodes` option is used to make the certificate and key files not password protected.  The `-newkey` option is used to specify the type of key to generate.  The `-keyout` option is used to specify the path of the key file.  The `-out` option is used to specify the path of the certificate file.  The `-subj` option is used to specify the subject of the certificate.  The `-x509` option is used to specify that the certificate is self-signed.
+
+And last but not least, the port `443` is exposed and the entrypoint is specified:
+```Dockerfile
+EXPOSE 443
+
+ENTRYPOINT echo "Running nginx" && nginx -g 'daemon off;'
+```
 
 ### Final Thoughts
 
