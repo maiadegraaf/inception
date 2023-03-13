@@ -129,6 +129,7 @@ Essentially, WordPress allows users to create and manage their own websites with
 | `docker network rm <network_name>`            | removes a network.                                                                                                                 |
 | `docker logs <container_id>`                  | shows the logs of a container.                                                                                                     |
 | `docker exec -it <container_id> <command>`    | executes a command in a running container.                                                                                         |
+| `docker exec -it <container_id> bash`         | opens a bash shell in a running container.                                                                                         |
 
 
 
@@ -387,6 +388,7 @@ EXPOSE 443
 
 ENTRYPOINT [ "./start.sh" ]
 ```
+
 Where the entrypoint is the start.sh script, and once again the entrypoint is executed with `exec` rather than `sh`, like in the WordPress and MariaDB container.
 
 ### Virtual Machine and Shared Folder
