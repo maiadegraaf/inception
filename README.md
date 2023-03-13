@@ -17,16 +17,19 @@
     * [NGINX](#nginx)
     * [MariaDB](#mariadb)
     * [WordPress](#wordpress)
+  * [Useful Docker Commands](#useful-docker-commands)
+    * [Docker](#docker)
+    * [Docker Compose](#docker-compose)
   * [Implementation](#implementation)
     * [Docker Compose](#docker-compose)
-      * [Network](#network-1)
-      * [Volumes](#volumes-1)
+      * [Network](#network)
+      * [Volumes](#volumes)
       * [Containers](#containers)
       * [.env file](#env-file)
     * [Dockerfiles](#dockerfiles)
-      * [MariaDB](#mariadb-1)
-      * [WordPress](#wordpress-1)
-      * [NGINX](#nginx-1)
+      * [MariaDB](#mariadb)
+      * [WordPress](#wordpress)
+      * [NGINX](#nginx)
     * [Virtual Machine and Shared Folder](#virtual-machine-and-shared-folder)
     * [Final Thoughts](#final-thoughts)
 <!-- TOC -->
@@ -105,6 +108,42 @@ _"WordPress is a free and open-source content management system written in PHP a
 
 Essentially, WordPress allows users to create and manage their own websites without having to know how to code.  It is a popular choice for many websites as it is easy to use and has a large community of developers that are constantly improving it.  It is also very flexible and can be used for a wide variety of purposes, including blogs, e-commerce, and even forums.
 
+## Useful Docker Commands
+
+### Docker
+| Command                                       | Explanation                                                                                                                        |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `docker run <image_name>`                     | runs a container from an image.                                                                                                    |
+| `docker ps`                                   | lists all running containers.                                                                                                      |
+| `docker ps -a`                                | lists all containers.                                                                                                              |
+| `docker images`                               | lists all images.                                                                                                                  |
+| `docker stop <container_id>`                  | stops a running container.                                                                                                         |
+| `docker start <container_id>`                 | starts a stopped container.                                                                                                        |
+| `docker rm <container_id>`                    | removes a container.                                                                                                               |
+| `docker volume ls`                            | lists all volumes.                                                                                                                 |
+| `docker volume rm <volume_name>`              | removes a volume.                                                                                                                  |
+| `docker network ls`                           | lists all networks.                                                                                                                |
+| `docker network rm <network_name>`            | removes a network.                                                                                                                 |
+| `docker logs <container_id>`                  | shows the logs of a container.                                                                                                     |
+| `docker exec -it <container_id> <command>`    | executes a command in a running container.                                                                                         |
+
+
+
+### Docker Compose
+
+| Command                                        | Explanation                                                                                                                          |
+|------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `docker-compose up`                            | starts the containers defined in the `docker-compose.yml` file.  If the containers are already running it will restart them.         |
+| `docker-compose down`                          | stops the containers defined in the `docker-compose.yml` file.  If the containers are already stopped it will do nothing.            |
+| `docker-compose ps`                            | lists the containers defined in the `docker-compose.yml` file.                                                                       |
+| `docker-compose logs`                          | shows the logs of the containers defined in the `docker-compose.yml` file.                                                           |
+| `docker-compose exec <service_name> <command>` | executes a command in a running container.                                                                                           |
+| `docker-compose stop`                          | gracefully stops the containers defined in the `docker-compose.yml` file.  If the containers are already stopped it will do nothing. | 
+| `docker-compose kill`                          | instantly stops the containers defined in the `docker-compose.yml` file.  If the containers are already stopped it will do nothing.  |
+
+
+
+
 ## Implementation
 This project was quite finicky, and it was often quite difficult to understand the root of errors.  For this reason I tried to build the project up slowly, first by setting up the network, then configuring the volumes, and finally one container at a time and only moving to the next part once all errors were resolved.  I also waited to move the project to a virtual machine as they are notoriously slow.
 
@@ -180,11 +219,11 @@ services:
   nginx:
     #...
     volumes:
-      - wp:/var/www/html
+      - wp:/var/www/wordpress
   wordpress:
     #...
     volumes:
-      - wp:/var/www/html
+      - wp:/var/www/wordpress
 ```
 
 Where `db` is the name of the volume, and `/var/lib/mysql` is the path to the directory on the container that will be used to store the data.  The same is done for the WordPress container, but the path is different as the WordPress container uses a different directory to store the data.
@@ -215,21 +254,23 @@ Where:
 - `networks: - lenetwork` is used to specify the network that the container will be connected to.
 - `env_file: - .env` is used to specify the path to the file that contains the environment variables that will be used to configure the container.
 
-NGINX and WordPress were configured in a similar manner except for the `env_file` option.  The `env_file` option was not used as the environment variables are not needed for these containers.  Further I specified the port NGINX would use which is `443:443` as per the subject, and made it depend on the WordPress container which needs to be running before NGINX can start.  The final `docker-compose.yml` file can be found [here](./src/docker-compose.yml).
+NGINX and WordPress were configured in a similar manner.  Except for the `env_file` and `ports` options in the NGINX container.  The `env_file` option was not used as the environment variables are not needed in this container, and the port specified is `443:443` as per the subject.  The NGINX container also is made dependent on the WordPress container which needs to be running before NGINX can start.  The final `docker-compose.yml` file can be found [here](./src/docker-compose.yml).
 
 #### .env file
-While I was setting up the `docker-compose.yml` file I also created a `.env` file which contains the environment variables that will be used to configure the MariaDB container.  The `.env` file is structured as follows:
+While I was setting up the `docker-compose.yml` file I also created a `.env` file which contains the environment variables that will be used to configure the MariaDB and WordPress container.  The `.env` file is structured as follows:
 ```env
-WP_USER_PASSWORD=bigsecret
-WP_BOSS_PASSWORD=smallsecret
+DB_NAME=wordpress
+
+WP_BG_PW=bigsecret
+WP_SG_PW=smallsecret
 WP_URL=mgraaf.42.fr
 
-WP_BOSS_LOGIN=BigGuy
-WP_USER_LOGIN=SmallGuy
+WP_BG_LOGIN=BigGuy
+WP_SG_LOGIN=SmallGuy
 TZ=Europe/Madrid
-ROOT_PASSWORD=rootpw
+ROOT_PW=rootpw
 ```
-The subject also requires that the url is our intra login.  The `.env` file can be found [here](./src/.env).
+The subject asks for two users to be created in the WordPress database, one of which is an administrator, but isn't allowed to be named that, so I named my administrator `BigGuy` and the other user `SmallGuy`. The subject also requires that the url is our intra login.  Environment variables are used to make the `docker-compose.yml` file more readable and to make it easier to change the configuration.  The `.env` file can be found [here](./src/.env).
 
 ### Dockerfiles
 In order to properly test the containers as I was building them I commented all the containers except for the one I was working on.  This way I could test the container in isolation.  Once the container was working I uncommented the other containers and tested the whole project.  This was a very useful technique as it allowed me to quickly identify errors and fix them.
@@ -250,12 +291,7 @@ Where the first line specifies the image that will be used to create the contain
 ```Dockerfile
 COPY tools/db_setup.sh /tmp/
 ``` 
-Where `COPY` is used to copy the setup file from the host to tmp directory on the container.  The `db_setup.sh` file can be found [here](./src/requirements/mariadb/tools/db_setup.sh) and is a MariaDB setup script that installs the database, starts it, and  creates two users, one that essentially has root privileges and one that has no privileges.
-
-```Dockerfile
-EXPOSE 3306
-```
-Where `EXPOSE` is used to expose the port that the container will use.  The port is `3306` as per the subject.
+Where `COPY` is used to copy the setup file from the host to tmp directory on the container.  The `db_setup.sh` file can be found [here](./src/requirements/mariadb/tools/db_setup.sh) and is a MariaDB setup script that installs the database, starts it, and  creates two users, one that essentially has root privileges and one that has no privileges. The script also checks if the database is already installed, and if it is it does not install it again.  This is useful as the container will be restarted if it crashes, and the database should not be installed again.
 
 ```Dockerfile
 RUN chmod +x /tmp/db_setup.sh
@@ -267,9 +303,9 @@ Here, the first run makes the setup script executable, and the second and third 
 
 Finally, an entrypoint is specified:
 ```Dockerfile
-ENTRYPOINT /tmp/db_setup.sh
+ENTRYPOINT ["/tmp/db_setup.sh"]
 ```
-Where the entrypoint is the setup script.
+Where the entrypoint is the setup script.  The square brackets around the path instructs the entrypoint to execute the script with `exec` rather than `sh`.  The `exec` command replaces the current process with the new process, i.e. `PID 1`.  This is important as it allows the container to receive signals from the host and properly shut down.
 
 #### WordPress
 Once I was satisfied with the MariaDB container I moved on to the WordPress container.  The `Dockerfile` is structured as follows:
@@ -307,9 +343,9 @@ Next the port `9000` is exposed and entrypoint is specified:
 ```Dockerfile 
 EXPOSE 9000
 
-ENTRYPOINT ./wait.sh && ./wp_setup.sh
+ENTRYPOINT ["./wp_setup.sh"]
 ```
-Where the entrypoint is the wait script followed by the setup script.
+Where the entrypoint is the setup script, and the setup script calls the wait script.  Like the MariaDB container, the square brackets around the path instructs the entrypoint to execute the script with `exec` rather than `sh.
 
 #### NGINX
 Finally, I set up the NGINX container.  The `Dockerfile` is structured as follows:
@@ -324,22 +360,30 @@ The first two lines (after the `FROM`) are used to update the package list and i
 
 ```Dockerfile
 COPY conf/nginx.conf /etc/nginx/sites-available/default.conf
+COPY start.sh .
+RUN chmod +x start.sh
 ```
-Where `COPY` is used to copy the configuration file from the host to the container.  The configuration file can be found [here](./src/requirements/nginx/conf/nginx.conf).
+Where `COPY` is used to copy the configuration file and start.sh from the host to the container, and `RUN` makes start.sh executable.  The configuration file can be found [here](./src/requirements/nginx/conf/nginx.conf).  The start.sh starts NGINX and can be found [here](./src/requirements/nginx/start.sh).
 
 The configuration file sets up the server and configures the various components.  Importantly it sets up the ssl certificate and key.  The `ssl_certificate` and `ssl_certificate_key` options are set to the paths of the certificate and key files, which are generated in the Dockerfile.  It also sets the ssl protocols to `TLSv1.2` and `TLSv1.3` as required in the subject.  The ssl protocol sets up the encryption that is used to secure the connection between the client and the server.
 
 ```Dockerfile
-RUN openssl req -nodes -newkey rsa:4096 -keyout /etc/nginx/key.key -out /etc/nginx/crt.crt -subj "/C=NL/ST=FunkyState/L=BlepCity/O=Bloebla Inc./CN=Ms. Fliebel" -x509
+RUN ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 ```
-The `openssl` command is used to generate the certificate and key files that are used in the configuration file.  The `-nodes` option is used to make the certificate and key files not password protected.  The `-newkey` option is used to specify the type of key to generate.  The `-keyout` option is used to specify the path of the key file.  The `-out` option is used to specify the path of the certificate file.  The `-subj` option is used to specify the subject of the certificate.  The `-x509` option is used to specify that the certificate is self-signed.
+Here, the `ln` command is used to create a symbolic link from the configuration file to the sites-enabled directory.  This is needed so that the configuration file is used by NGINX.
+
+```Dockerfile
+RUN openssl req -x509 -nodes -newkey rsa:2048 -keyout /etc/nginx/key.key -out /etc/nginx/crt.crt -subj "/CN=mgraaf.42.fr"
+```
+The `openssl` command is used to generate the certificate and key files that are used in the configuration file.  The `-nodes` option is used to make the certificate and key files not password protected.  The `-newkey` option is used to specify the type of key to generate.  The `-keyout` option is used to specify the path of the key file.  The `-out` option is used to specify the path of the certificate file.  The `-subj` option is used to specify the subject of the certificate.  The subject is the information that is displayed when you click on the lock icon in the browser.  The subject is set to `mgraaf.42.fr` as required in the subject.
 
 And last but not least, the port `443` is exposed and the entrypoint is specified:
 ```Dockerfile
 EXPOSE 443
 
-ENTRYPOINT echo "Running nginx" && nginx -g 'daemon off;'
+ENTRYPOINT [ "./start.sh" ]
 ```
+Where the entrypoint is the start.sh script, and once again the entrypoint is executed with `exec` rather than `sh`, like in the WordPress and MariaDB container.
 
 ### Virtual Machine and Shared Folder
 While I was working on the containers I also set up a virtual machine and a shared folder.  As some things setup in the dockerfiles require you to be a root user of the host computer, which students don't have access to, I needed to set up the VM in order to properly run the project.  In order to do this without pulling out all of my hairs and having to code on the slowest interface known to man I set up a shared folder.  The shared folder is a folder on the host that is shared with the virtual machine.  It meant that I could be working on the project on my host computer and the changes would be reflected in the virtual machine. 

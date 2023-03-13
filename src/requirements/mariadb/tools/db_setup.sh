@@ -1,17 +1,18 @@
 #!bin/bash
 
-if [ ! -d /run/mysqld ]
+if [ ! -d /run/mysqld ] #checks if the database is not already set up
 then
 
 	echo "Setting up MariaDB"
+
+	# Create the run directory for mysqld
 	mkdir -p /run/mysqld
 	chown -R mysql:mysql /run/mysqld
-	# chmod -R 755 /var/lib/mysql
 	chown -R mysql:mysql /var/lib/mysql
 
-	mysql_install_db --basedir=/usr --datadir=/var/lib/mysql
+	mysql_install_db --basedir=/usr --datadir=/var/lib/mysql #initializes database
 
-# service mysql start && 
+# Creates a temporary file to store the SQL commands to be executed, creates the database and the users
 cat << EOF > init.sql
 	USE mysql;
 	FLUSH PRIVILEGES;
