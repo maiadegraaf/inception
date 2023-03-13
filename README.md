@@ -420,6 +420,7 @@ It has the following targets:
 - `kill`, which calls docker-compose kill to kill the containers.
 - `reset` which calls docker-compose down to remove the containers.  It then uses `docker rm -f` to remove the containers and `docker volume rm` to remove the volumes.  and removes the directories for the database and WordPress files.
 - `re` which calls reset and then up.
+
 Make calls up.
 
 ### Final Thoughts
