@@ -2,8 +2,10 @@
 
 *A System Administration related exercise.*
 
+## Table of Contents
 <!-- TOC -->
 * [inception](#inception)
+  * [Table of Contents](#table-of-contents)
   * [The Challenge](#the-challenge)
     * [Requirements:](#requirements-)
   * [Concepts](#concepts)
@@ -31,6 +33,7 @@
       * [WordPress](#wordpress)
       * [NGINX](#nginx)
     * [Virtual Machine and Shared Folder](#virtual-machine-and-shared-folder)
+    * [Makefile](#makefile)
     * [Final Thoughts](#final-thoughts)
 <!-- TOC -->
 
@@ -410,7 +413,7 @@ becomes
 ```
 
 ### Makefile
-The Makefile in this project was quite simple.
+The Makefile in this project was quite simple, and can be found [here](./src/requirements/Makefile).
 It has the following targets:
 - `up`, which makes two directories for the database and WordPress files, and then starts calls docker-compose up to start the containers.
 - `stop`, which calls docker-compose stop to stop the containers.
@@ -421,4 +424,3 @@ Make calls up.
 
 ### Final Thoughts
 While creating this ReadMe it felt like this project was actually quite straight forward but in reality I really struggled.  I found it quite difficult to trace back the errors, and often it took me hours to figure out what was going wrong, which was quite frustrating.  Especially as many of the errors were caused by spelling mistakes that prevented the different containers from connecting, which is not something that tends to show up in error logs.  I also found it quite difficult to find the right documentation for the things I was trying to do.  Overall, the project was quite finicky and while working on it, if I got something to work, even if it was not a nice or optimal solution I would just leave it as it was for fear of breaking something else.  Which is not something I usually do. I'm not necessarily proud of this project, but I am happy I got it done and I did learn a lot about Docker, MariaDB, and NGINX.
-
