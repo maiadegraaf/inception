@@ -335,6 +335,7 @@ COPY tools/wait.sh .
 RUN chmod +x wp_setup.sh
 RUN chmod +x wait.sh
 ```
+
 Here, the first two `COPY`'s copy the setup script and the wait script from the host to the container.  The third and fourth `RUN`'s make the scripts executable.
 
 The wp_setup script installs WordPress, starts the php-fpm server, and creates a WordPress user.  The wait script waits for the database to be ready before starting the php-fpm server.  The `wp_setup.sh` file can be found [here](./src/requirements/wordpress/tools/wp_setup.sh) and the `wait.sh` file can be found [here](./src/requirements/wordpress/tools/wait.sh).
@@ -408,6 +409,15 @@ becomes
 127.0.0.1   localhost   mgraaf.42.fr
 ```
 
+### Makefile
+The Makefile in this project was quite simple.
+It has the following targets:
+- `up`, which makes two directories for the database and WordPress files, and then starts calls docker-compose up to start the containers.
+- `stop`, which calls docker-compose stop to stop the containers.
+- `kill`, which calls docker-compose kill to kill the containers.
+- `reset` which calls docker-compose down to remove the containers.  It then uses `docker rm -f` to remove the containers and `docker volume rm` to remove the volumes.  and removes the directories for the database and WordPress files.
+- `re` which calls reset and then up.
+Make calls up.
 
 ### Final Thoughts
 While creating this ReadMe it felt like this project was actually quite straight forward but in reality I really struggled.  I found it quite difficult to trace back the errors, and often it took me hours to figure out what was going wrong, which was quite frustrating.  Especially as many of the errors were caused by spelling mistakes that prevented the different containers from connecting, which is not something that tends to show up in error logs.  I also found it quite difficult to find the right documentation for the things I was trying to do.  Overall, the project was quite finicky and while working on it, if I got something to work, even if it was not a nice or optimal solution I would just leave it as it was for fear of breaking something else.  Which is not something I usually do. I'm not necessarily proud of this project, but I am happy I got it done and I did learn a lot about Docker, MariaDB, and NGINX.
