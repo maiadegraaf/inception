@@ -17,4 +17,4 @@ RUN chmod +x wait.sh
 
 EXPOSE 9000
 
-ENTRYPOINT ./wait.sh && ./wp_setup.sh
+ENTRYPOINT ["./wp_setup.sh"]

@@ -1,24 +1,43 @@
 #!bin/bash
 
-chmod -R 755 /var/lib/mysql
-chown -R mysql:mysql /var/lib/mysql
+if [ ! -d /run/mysqld ]
+then
 
-mysql_install_db --basedir=/usr --datadir=/var/lib/mysql
+	echo "Setting up MariaDB"
+	mkdir -p /run/mysqld
+	chown -R mysql:mysql /run/mysqld
+	# chmod -R 755 /var/lib/mysql
+	chown -R mysql:mysql /var/lib/mysql
 
-service mysql start && mysql -u root << EOF  
-	CREATE DATABASE IF NOT EXISTS wordpress;
+	mysql_install_db --basedir=/usr --datadir=/var/lib/mysql
 
-	CREATE USER 'BigGuy'@'%';
-	SET PASSWORD FOR 'BigGuy'@'%' = PASSWORD('bigsecret');
-	GRANT ALL PRIVILEGES ON wordpress.* TO 'BigGuy'@'%';
-	-- IDENTIFIED BY ('itsasecret');
-	GRANT ALL ON wordpress.* to 'BigGuy'@'%';
+# service mysql start && 
+cat << EOF > init.sql
+	USE mysql;
 	FLUSH PRIVILEGES;
 
-	CREATE USER 'SmallGuy'@'%';
-	SET PASSWORD FOR 'SmallGuy'@'%' = PASSWORD('smallsecret');
+	DELETE FROM mysql.user WHERE User='';
+	DROP DATABASE test;
+	DELETE FROM mysql.db WHERE Db='test';
+
+	ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PW';
+
+	CREATE DATABASE IF NOT EXISTS $DB_NAME;
+
+	CREATE USER '$WP_BG_LOGIN'@'%';
+	SET PASSWORD FOR '$WP_BG_LOGIN'@'%' = PASSWORD('$WP_BG_PW');
+	GRANT ALL PRIVILEGES ON wordpress.* TO '$WP_BG_LOGIN'@'%';
+	GRANT ALL ON wordpress.* to '$WP_BG_LOGIN'@'%';
+	FLUSH PRIVILEGES;
+
+	CREATE USER '$WP_SG_LOGIN'@'%';
+	SET PASSWORD FOR '$WP_SG_LOGIN'@'%' = PASSWORD('$WP_SG_PW');
 EOF
 
-mysqladmin -u root -p$WP_ROOT_PW shutdown
+mysqld --user=mysql --bootstrap < init.sql
 
-mysqld #starts database server in foreground
+fi
+
+echo "MariaDB started"
+
+exec mysqld --user=mysql --console #starts database server in foreground

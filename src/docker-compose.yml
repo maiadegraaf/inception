@@ -18,7 +18,7 @@ services:
     build: requirements/nginx
     restart: always
     volumes:
-      - wp:/var/www/html
+      - wp:/var/www/wordpress
     networks:
       - lenetwork
     depends_on:
@@ -31,9 +31,11 @@ services:
     build: requirements/wordpress
     restart: always
     volumes:
-      - wp:/var/www/html
+      - wp:/var/www/wordpress
     networks:
       - lenetwork
+    env_file:
+      - .env
 
 volumes:
   db:

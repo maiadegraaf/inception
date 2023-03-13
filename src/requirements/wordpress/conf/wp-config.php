@@ -12,9 +12,9 @@
 
 
 /* MySQL settings */
-define( 'DB_NAME',     'wordpress_database' );
+define( 'DB_NAME',     'wordpress' );
 define( 'DB_USER',     'BigGuy' );
-define( 'DB_PASSWORD', 'itsasecret' );
+define( 'DB_PASSWORD', 'bigsecret' );
 define( 'DB_HOST',     'mgraaf.42.fr' );
 define( 'DB_CHARSET',  'utf8mb4' );
 
